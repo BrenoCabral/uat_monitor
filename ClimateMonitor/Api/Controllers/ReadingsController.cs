@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using ClimateMonitor.Services;
 using ClimateMonitor.Services.Models;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace ClimateMonitor.Api.Controllers;
 
@@ -37,6 +38,14 @@ public class ReadingsController : ControllerBase
         [FromBody] DeviceReadingRequest deviceReadingRequest)
     {
         var deviceSecret = Request.Headers["x-device-shared-secret"];
+        if (!_secretValidator.ValidateFirmwareVersion(deviceReadingRequest.FirmwareVersion))
+        {
+            var modelState = new ModelStateDictionary();
+            modelState.AddModelError("FirmwareVersion", "The firmware value does not match semantic versioning format.");
+            
+            return BadRequest(new ValidationProblemDetails(modelState));
+        }
+
         if (!_secretValidator.ValidateDeviceSecret(deviceSecret))
         {
             return Problem(
