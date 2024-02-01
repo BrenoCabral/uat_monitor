@@ -34,9 +34,9 @@ public class ReadingsController : ControllerBase
     /// <param name="deviceReadingRequest">Sensor information and extra metadata from device.</param>
     [HttpPost("evaluate")]
     public ActionResult<IEnumerable<Alert>> EvaluateReading(
-        string deviceSecret,
         [FromBody] DeviceReadingRequest deviceReadingRequest)
     {
+        var deviceSecret = Request.Headers["x-device-shared-secret"];
         if (!_secretValidator.ValidateDeviceSecret(deviceSecret))
         {
             return Problem(
